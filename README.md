@@ -1,4 +1,3 @@
-
 # Fitting a Logistic Regression Model - Lab
 
 ## Introduction
@@ -13,18 +12,29 @@ In this lab you will:
 * Implement logistic regression with `statsmodels` 
 * Interpret the statistical results associated with model parameters
 
+
 ## Import the data
 
 Import the data stored in the file `'titanic.csv'` and print the first five rows of the DataFrame to check its contents. 
 
 
 ```python
+
 # Import the data
+import pandas as pd
 
-
-df = None
+df = pd.read_csv('titanic.csv')
+df.head()
 
 ```
+
+
+```python
+
+df.info()
+
+```
+
 
 ## Define independent and target variables
 
@@ -32,20 +42,29 @@ Your target variable is in the column `'Survived'`. A `0` indicates that the pas
 
 
 ```python
+
 # Total number of people who survived/didn't survive
+df.loc[df['Survived']==0]
+did_not_survive = 549
+survived = 342
 
 ```
+
 
 Only consider the columns specified in `relevant_columns` when building your model. The next step is to create dummy variables from categorical variables. Remember to drop the first level for each categorical column and make sure all the values are of type `float`: 
 
 
 ```python
+
 # Create dummy variables
 relevant_columns = ['Pclass', 'Age', 'SibSp', 'Fare', 'Sex', 'Embarked', 'Survived']
-dummy_dataframe = None
-
+dummy_dataframe = pd.get_dummies(df[relevant_columns], drop_first=True, dtype=float)
+                                
+print(dummy_dataframe.dtypes)
 dummy_dataframe.shape
+
 ```
+
 
 Did you notice above that the DataFrame contains missing values? To keep things simple, simply delete all rows with missing values. 
 
@@ -53,19 +72,32 @@ Did you notice above that the DataFrame contains missing values? To keep things 
 
 
 ```python
+
 # Drop missing rows
-dummy_dataframe = None
+dummy_dataframe = dummy_dataframe.dropna(how='any')
 dummy_dataframe.shape
+
 ```
+
 
 Finally, assign the independent variables to `X` and the target variable to `y`: 
 
 
 ```python
+
 # Split the data into X and y
-y = None
-X = None
+y = dummy_dataframe['Survived']
+X = dummy_dataframe.drop(columns=['Survived'], axis=1)
+
 ```
+
+
+```python
+
+X
+
+```
+
 
 ## Fit the model
 
@@ -75,9 +107,21 @@ Now with everything in place, you can build a logistic regression model using `s
 
 
 ```python
+
 # Build a logistic regression model using statsmodels
+import statsmodels.api as sm
+
+# Add constant for intercept
+X = sm.add_constant(X)
+
+# create the model
+logmodel = sm.Logit(endog=y, exog=X)
+
+# fit the model
+result = logmodel.fit()
 
 ```
+
 
 ## Analyze results
 
@@ -85,15 +129,18 @@ Generate the summary table for your model. Then, comment on the p-values associa
 
 
 ```python
+
 # Summary table
+print(result.summary())
 
 ```
 
 
-```python
 # Your comments here
+Most of the features are statistically significant as indicated by their low p-values based on a 0.05 significance level.
 
-```
+Fare and  Embarked features have a p-value that is greater than 0.05 thus they are not statistically significant.
+
 
 ## Level up (Optional)
 
@@ -101,15 +148,38 @@ Create a new model, this time only using those features you determined were infl
 
 
 ```python
+
 # Your code here
+y = dummy_dataframe['Survived']
+X = dummy_dataframe.drop(columns=['Survived','Embarked_Q', 'Embarked_S', 'Fare'], axis=1)
+
+# Build a logistic regression model using statsmodels
+import statsmodels.api as sm
+
+# Add constant for intercept
+X = sm.add_constant(X)
+
+# create the model
+logmodel = sm.Logit(endog=y, exog=X)
+
+# fit the model
+result = logmodel.fit()
 
 ```
 
 
 ```python
-# Your comments here
+
+print(result.summary())
+
 ```
+
+
+# Your comments here
+All the fearures are statistically significant based on a 0.05 significance level
+
 
 ## Summary 
 
 Well done! In this lab, you practiced using `statsmodels` to build a logistic regression model. You then interpreted the results, building upon your previous stats knowledge, similar to linear regression. Continue on to take a look at building logistic regression models in Scikit-learn!
+
